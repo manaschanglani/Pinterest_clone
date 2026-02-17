@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import '../widgets/input_field.dart';
 
 class PasswordPage extends StatefulWidget {
   final TextEditingController controller;
+  final Function(bool) onValidChanged;
 
-  const PasswordPage({super.key, required this.controller});
+  const PasswordPage({
+    super.key,
+    required this.controller,
+    required this.onValidChanged,
+  });
 
   @override
   State<PasswordPage> createState() => _PasswordPageState();
@@ -49,7 +53,18 @@ class _PasswordPageState extends State<PasswordPage> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(() => setState(() {}));
+    widget.controller.addListener(_listener);
+  }
+
+  void _listener() {
+    setState(() {});
+    widget.onValidChanged(_isValid);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_listener);
+    super.dispose();
   }
 
   @override
@@ -128,7 +143,6 @@ class _PasswordPageState extends State<PasswordPage> {
 
           const SizedBox(height: 12),
 
-          /// Helper text
           const Text(
             "Use 8 or more letters, numbers and symbols",
             style: TextStyle(
@@ -139,7 +153,6 @@ class _PasswordPageState extends State<PasswordPage> {
 
           const SizedBox(height: 14),
 
-          /// Strength indicator (only if typing)
           if (hasText) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(8),

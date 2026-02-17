@@ -11,6 +11,7 @@ StateNotifierProvider<AuthNotifier, AuthState>(
       (ref) => AuthNotifier(ref),
 );
 
+
 class AuthState {
   final bool isLoading;
   final AppUser? user;

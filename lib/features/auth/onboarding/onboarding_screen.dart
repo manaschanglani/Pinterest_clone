@@ -22,7 +22,12 @@ class SignUpOnboardingScreen extends ConsumerStatefulWidget {
 class _SignUpOnboardingScreenState
     extends ConsumerState<SignUpOnboardingScreen> {
   final PageController _pageController = PageController();
+
   int _currentPage = 0;
+
+  // Validation states
+  bool _emailValid = false;
+  bool _passwordValid = false;
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -32,6 +37,10 @@ class _SignUpOnboardingScreenState
   String _gender = '';
   DateTime? _dob;
   final List<String> _selectedTopics = [];
+
+  // ------------------------------------------------
+  // Navigation
+  // ------------------------------------------------
 
   void _nextPage() {
     if (_currentPage < 5) {
@@ -51,6 +60,10 @@ class _SignUpOnboardingScreenState
     }
   }
 
+  // ------------------------------------------------
+  // Sign Up
+  // ------------------------------------------------
+
   Future<void> _finishSignUp() async {
     await ref.read(authStateProvider.notifier).signUp(
       email: _emailController.text.trim(),
@@ -63,6 +76,39 @@ class _SignUpOnboardingScreenState
     );
   }
 
+  // ------------------------------------------------
+  // Button Enable Logic
+  // ------------------------------------------------
+
+  bool get _canProceed {
+    switch (_currentPage) {
+      case 0:
+        return _emailValid;
+
+      case 1:
+        return _passwordValid;
+
+      case 2:
+        return _usernameController.text.isNotEmpty && _dob != null;
+
+      case 3:
+        return _gender.isNotEmpty;
+
+      case 4:
+        return _locationController.text.isNotEmpty;
+
+      case 5:
+        return _selectedTopics.length >= 3;
+
+      default:
+        return false;
+    }
+  }
+
+  // ------------------------------------------------
+  // UI
+  // ------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,11 +117,11 @@ class _SignUpOnboardingScreenState
           children: [
             const SizedBox(height: 20),
 
+            /// TOP BAR (Back + Dots)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  /// BACK BUTTON
                   GestureDetector(
                     onTap: () {
                       if (_currentPage == 0) {
@@ -97,7 +143,6 @@ class _SignUpOnboardingScreenState
                     ),
                   ),
 
-                  /// Spacer to balance layout
                   const SizedBox(width: 20),
                 ],
               ),
@@ -105,6 +150,7 @@ class _SignUpOnboardingScreenState
 
             const SizedBox(height: 20),
 
+            /// PAGES
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -113,8 +159,20 @@ class _SignUpOnboardingScreenState
                   setState(() => _currentPage = index);
                 },
                 children: [
-                  EmailPage(controller: _emailController),
-                  PasswordPage(controller: _passwordController),
+                  EmailPage(
+                    controller: _emailController,
+                    onValidChanged: (valid) {
+                      setState(() => _emailValid = valid);
+                    },
+                  ),
+
+                  PasswordPage(
+                    controller: _passwordController,
+                    onValidChanged: (valid) {
+                      setState(() => _passwordValid = valid);
+                    },
+                  ),
+
                   UsernameDobPage(
                     usernameController: _usernameController,
                     dob: _dob,
@@ -122,13 +180,20 @@ class _SignUpOnboardingScreenState
                       setState(() => _dob = date);
                     },
                   ),
+
                   GenderPage(
                     gender: _gender,
                     onChanged: (value) {
                       setState(() => _gender = value);
                     },
                   ),
-                  LocationPage(controller: _locationController),
+
+                  LocationPage(
+                    controller: _locationController,
+                    onChanged: () => setState(() {}),
+                  ),
+
+
                   TopicsPage(
                     selectedTopics: _selectedTopics,
                     onToggle: (topic) {
@@ -145,10 +210,18 @@ class _SignUpOnboardingScreenState
               ),
             ),
 
-            OnboardingButton(
-              isLastPage: _currentPage == 5,
-              onPressed:
-              _currentPage == 5 ? _finishSignUp : _nextPage,
+            /// BOTTOM BUTTON
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: OnboardingButton(
+                isLastPage: _currentPage == 5,
+                enabled: _canProceed,
+                onPressed: _canProceed
+                    ? (_currentPage == 5
+                    ? _finishSignUp
+                    : _nextPage)
+                    : null,
+              ),
             ),
 
             const SizedBox(height: 20),

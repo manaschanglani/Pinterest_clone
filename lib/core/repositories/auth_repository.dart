@@ -64,6 +64,18 @@ class AuthRepository {
     return AppUser.fromMap(doc.data()!);
   }
 
+  Future<bool> emailExists(String email) async {
+    final query = await _firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    return query.docs.isNotEmpty;
+  }
+
+
+
   Future<void> logout() async {
     await _auth.signOut();
   }

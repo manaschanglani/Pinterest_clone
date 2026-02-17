@@ -2,31 +2,37 @@ import 'package:flutter/material.dart';
 
 class OnboardingButton extends StatelessWidget {
   final bool isLastPage;
-  final VoidCallback onPressed;
+  final bool enabled;
+  final VoidCallback? onPressed;
 
   const OnboardingButton({
     super.key,
     required this.isLastPage,
+    required this.enabled,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor:
-            Theme.of(context).colorScheme.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: enabled ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: enabled
+              ? Theme.of(context).colorScheme.primary
+              : Colors.grey.shade300,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Text(isLastPage ? "Finish" : "Next"),
+        ),
+        child: Text(
+          isLastPage ? "Finish" : "Next",
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
